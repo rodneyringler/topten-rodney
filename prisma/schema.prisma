@@ -1,0 +1,98 @@
+// This is your Prisma schema file
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String    @id @default(uuid())
+  email             String    @unique
+  username          String    @unique
+  password          String
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+
+  lists             TopTenList[]
+  votes             Vote[]
+
+  @@map("users")
+}
+
+model Category {
+  id          String    @id @default(uuid())
+  name        String    @unique
+  slug        String    @unique
+  description String?   @db.Text
+  icon        String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  lists       TopTenList[]
+
+  @@map("categories")
+}
+
+model TopTenList {
+  id          String    @id @default(uuid())
+  title       String
+  description String?   @db.Text
+  slug        String    @unique
+  isPublic    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryId  String
+  category    Category  @relation(fields: [categoryId], references: [id])
+
+  items       ListItem[]
+  votes       Vote[]
+
+  @@index([userId])
+  @@index([categoryId])
+  @@map("top_ten_lists")
+}
+
+model ListItem {
+  id          String    @id @default(uuid())
+  rank        Int
+  title       String
+  description String?   @db.Text
+  imageUrl    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  listId      String
+  list        TopTenList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([listId, rank])
+  @@index([listId])
+  @@map("list_items")
+}
+
+model Vote {
+  id          String    @id @default(uuid())
+  createdAt   DateTime  @default(now())
+
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  listId      String
+  list        TopTenList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  // Ensure a user can only vote once per category (enforced via application logic + this unique constraint)
+  @@unique([userId, listId])
+  @@index([userId])
+  @@index([listId])
+  @@map("votes")
+}

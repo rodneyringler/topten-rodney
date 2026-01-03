@@ -1,0 +1,46 @@
+import { NextResponse } from 'next/server';
+import prisma from '@/lib/prisma';
+import { getSession } from '@/lib/session';
+
+export async function GET() {
+  try {
+    const session = await getSession();
+
+    if (!session.isLoggedIn || !session.userId) {
+      return NextResponse.json(
+        { success: false, error: 'Not authenticated' },
+        { status: 401 }
+      );
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: session.userId },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        createdAt: true,
+      },
+    });
+
+    if (!user) {
+      // User was deleted, clear session
+      session.destroy();
+      return NextResponse.json(
+        { success: false, error: 'User not found' },
+        { status: 404 }
+      );
+    }
+
+    return NextResponse.json({
+      success: true,
+      data: { user },
+    });
+  } catch (error) {
+    console.error('Get user error:', error);
+    return NextResponse.json(
+      { success: false, error: 'An error occurred' },
+      { status: 500 }
+    );
+  }
+}
