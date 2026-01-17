@@ -1,4 +1,4 @@
-# TopTen
+# TopTen-Rodney
 
 A web application that allows users to create and manage their own top ten lists. Users can browse, share, and vote for their favorite lists organized by categories.
 
