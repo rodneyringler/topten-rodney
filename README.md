@@ -4,7 +4,7 @@ A web application that allows users to create and manage their own top ten lists
 
 ## Features
 
-- **User Authentication**: Create accounts with username/email, secure password requirements, and password reset functionality
+- **User Authentication**: Create accounts with username/email, secure password requirements, password reset functionality, and Google OAuth sign-in
 - **Create Lists**: Users can create top ten lists in various categories with titles and descriptions for each item
 - **Browse & Discover**: Browse all public lists, filter by category, and see vote counts
 - **Voting System**: Logged-in users can vote once per category for their favorite list
@@ -19,7 +19,7 @@ A web application that allows users to create and manage their own top ten lists
 - **Styling**: Tailwind CSS
 - **Database**: MariaDB
 - **ORM**: Prisma
-- **Authentication**: Custom session-based auth with bcryptjs
+- **Authentication**: Custom session-based auth with bcryptjs and Google OAuth
 
 ## Prerequisites
 
@@ -52,7 +52,18 @@ A web application that allows users to create and manage their own top ten lists
 
    # App URL
    NEXT_PUBLIC_APP_URL="http://localhost:3000"
+
+   # Google OAuth (optional - for Google sign-in)
+   GOOGLE_CLIENT_ID="your-google-client-id"
+   GOOGLE_CLIENT_SECRET="your-google-client-secret"
+   GOOGLE_REDIRECT_URI="http://localhost:3000/api/auth/google/callback"
    ```
+
+   **Note:** For Google OAuth, you'll need to:
+   1. Create a project in [Google Cloud Console](https://console.cloud.google.com/)
+   2. Enable the Google+ API
+   3. Create OAuth 2.0 credentials
+   4. Add authorized redirect URIs (e.g., `http://localhost:3000/api/auth/google/callback` for dev, your production URL for prod)
 
 4. **Set up the database**
 
@@ -126,7 +137,9 @@ topten/
 
 ### Authentication
 - `POST /api/auth/signup` - Create new account
-- `POST /api/auth/login` - Log in
+- `POST /api/auth/login` - Log in with email/password
+- `GET /api/auth/google/initiate` - Initiate Google OAuth flow
+- `GET /api/auth/google/callback` - Google OAuth callback handler
 - `POST /api/auth/logout` - Log out
 - `GET /api/auth/me` - Get current user
 - `POST /api/auth/reset-password` - Request password reset

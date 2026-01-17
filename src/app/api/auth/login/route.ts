@@ -3,6 +3,8 @@ import prisma from '@/lib/prisma';
 import { verifyPassword } from '@/lib/auth';
 import { getSession } from '@/lib/session';
 
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
@@ -24,6 +26,14 @@ export async function POST(request: NextRequest) {
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Invalid email or password' },
+        { status: 401 }
+      );
+    }
+
+    // Check if user has a password (OAuth-only users don't have passwords)
+    if (!user.password) {
+      return NextResponse.json(
+        { success: false, error: 'This account uses Google sign-in. Please use "Sign in with Google" instead.' },
         { status: 401 }
       );
     }
